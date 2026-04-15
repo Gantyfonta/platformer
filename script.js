@@ -1,10 +1,13 @@
 // ... (Keep the previous setup variables like canvas, ctx, player) ...
 
 // Use the code you export from the editor here!
-let worldObjects = [
+// --- LEVEL DATA ---
+// Paste the code you copied from the "Export" box here:
+const worldObjects = [
     {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},
-    {"x":50,"y":330,"width":30,"height":30,"type":"SPAWN"}, // Default spawn
+    {"x":50,"y":330,"width":30,"height":30,"type":"SPAWN"},
     {"x":700,"y":300,"width":50,"height":80,"type":"GOAL"}
+    // ... all your other blocks will be here
 ];
 
 let spawnPoint = { x: 50, y: 300 };
