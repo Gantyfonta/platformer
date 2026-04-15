@@ -41,7 +41,7 @@ const LEVEL_DATABASE = [
        {"x":670.5,"y":173.1875,"width":127,"height":18,"type":"PLATFORM"},
         {"x":770.5,"y":142.1875,"width":30,"height":33,"type":"GOAL"}
     ],
-    [{"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},{"x":173.5,"y":107.1875,"width":483,"height":23,"type":"SPIKE","tx":172.5,"ty":356.1875,"isMoving":true}],
+    [{"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},{"x":173.5,"y":107.1875,"width":483,"height":23,"type":"SPIKE","tx":172.5,"ty":356.1875,"isMoving":true},{"x":743.5,"y":309.1875,"width":58,"height":68,"type":"GOAL"},{"x":5.5,"y":360.1875,"width":41,"height":22,"type":"SPAWN"}]
 
     [{"x":33.5,"y":311.1875,"width":83,"height":38,"type":"PLATFORM"},{"x":203.5,"y":328.1875,"width":53,"height":27,"type":"PLATFORM","tx":202.5,"ty":182.1875,"isMoving":true},{"x":321.5,"y":181.1875,"width":74,"height":31,"type":"PLATFORM","tx":319.5,"ty":325.1875,"isMoving":true},{"x":471.5,"y":342.1875,"width":47,"height":22,"type":"PLATFORM","tx":470.5,"ty":179.1875,"isMoving":true},{"x":639.5,"y":330.1875,"width":73,"height":37,"type":"PLATFORM","tx":637.5,"ty":95.1875,"isMoving":true},{"x":648.5,"y":22.1875,"width":69,"height":59,"type":"GOAL"},{"x":40.5,"y":278.1875,"width":39,"height":33,"type":"SPAWN"}]
 ];
