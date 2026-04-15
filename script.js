@@ -159,19 +159,25 @@ function update() {
     if (player.velX < -player.speed) player.velX = -player.speed;
     if (Math.abs(player.velX) < 0.1) player.velX = 0; // Prevent infinite sliding
 
-    // --- 4. Y-AXIS MOVE & COLLISION ---
+   // --- 4. Y-AXIS MOVE & COLLISION ---
     player.y += player.velY;
     worldObjects.forEach(obj => {
         if (player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
             player.y < obj.currentY + obj.height && player.y + player.height > obj.currentY) {
             
             if (obj.type === 'PLATFORM') {
+                // 1. Landing on TOP of the platform
                 if (player.velY >= 0 && player.y + player.height - player.velY <= obj.currentY + 10) { 
                     player.jumping = false;
                     player.velY = 0;
                     player.y = obj.currentY - player.height;
 
                     if (obj.isMoving) player.y += (obj.currentY - obj.oldY);
+                } 
+                // 2. Hitting the BOTTOM of the platform (Head Bonk)
+                else if (player.velY < 0 && player.y - player.velY >= obj.currentY + obj.height - 10) {
+                    player.velY = 0; // Stop upward momentum so gravity pulls you down
+                    player.y = obj.currentY + obj.height; // Snap exactly to the bottom edge
                 }
             } else if (obj.type === 'SPIKE') respawn();
             else if (obj.type === 'GOAL') nextLevel();
