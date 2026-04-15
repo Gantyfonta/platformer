@@ -255,6 +255,13 @@ function draw() {
 
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.width, player.height);
+    // --- DRAW TIMER ---
+    ctx.fillStyle = "white";
+    ctx.font = "bold 20px monospace";
+    // Place it in the top right corner
+    ctx.textAlign = "right";
+    ctx.fillText(formatTime(elapsedTime), canvas.width - 20, 30);
+    ctx.textAlign = "left"; // Reset alignment for other text
 }
 
 initLevel();
