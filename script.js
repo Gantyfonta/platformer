@@ -1,80 +1,59 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const scoreElement = document.getElementById('score');
+// ... (Keep the previous setup variables like canvas, ctx, player) ...
 
-canvas.width = 800;
-canvas.height = 400;
-
-// Game Constants
-const gravity = 0.8;
-const friction = 0.9;
-
-const player = {
-    x: 50,
-    y: 300,
-    width: 30,
-    height: 30,
-    speed: 5,
-    velX: 0,
-    velY: 0,
-    jumping: false,
-    color: '#ff4757'
-};
-
-const platforms = [
-    { x: 0, y: 380, width: 800, height: 20 }, // Floor
-    { x: 200, y: 280, width: 150, height: 20 },
-    { x: 450, y: 200, width: 150, height: 20 },
-    { x: 100, y: 150, width: 100, height: 20 }
+// Use the code you export from the editor here!
+let worldObjects = [
+    {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},
+    {"x":50,"y":330,"width":30,"height":30,"type":"SPAWN"}, // Default spawn
+    {"x":700,"y":300,"width":50,"height":80,"type":"GOAL"}
 ];
 
-const keys = {};
+let spawnPoint = { x: 50, y: 300 };
 
-// Input listeners
-window.addEventListener('keydown', (e) => keys[e.code] = true);
-window.addEventListener('keyup', (e) => keys[e.code] = false);
+function initLevel() {
+    // Find the spawn point in the level data
+    const spawn = worldObjects.find(o => o.type === 'SPAWN');
+    if (spawn) {
+        spawnPoint = { x: spawn.x, y: spawn.y };
+    }
+    respawn();
+}
+
+function respawn() {
+    player.x = spawnPoint.x;
+    player.y = spawnPoint.y;
+    player.velX = 0;
+    player.velY = 0;
+}
 
 function update() {
-    // Movement logic
-    if (keys['ArrowUp'] || keys['Space'] || keys['KeyW']) {
-        if (!player.jumping) {
-            player.velY = -player.speed * 3;
-            player.jumping = true;
-        }
-    }
-    if (keys['ArrowLeft'] || keys['KeyA']) {
-        if (player.velX > -player.speed) player.velX--;
-    }
-    if (keys['ArrowRight'] || keys['KeyD']) {
-        if (player.velX < player.speed) player.velX++;
-    }
+    // ... (Keep movement logic from previous code) ...
 
-    player.velX *= friction;
-    player.velY += gravity;
-
-    player.x += player.velX;
     player.y += player.velY;
+    player.x += player.velX;
 
-    // Platform Collision
-    player.jumping = true;
-    for (let plat of platforms) {
-        if (player.x < plat.x + plat.width &&
-            player.x + player.width > plat.x &&
-            player.y < plat.y + plat.height &&
-            player.y + player.height > plat.y) {
+    // OBJECT COLLISION LOOP
+    worldObjects.forEach(obj => {
+        if (player.x < obj.x + obj.width &&
+            player.x + player.width > obj.x &&
+            player.y < obj.y + obj.height &&
+            player.y + player.height > obj.y) {
             
-            // Basic floor collision logic
-            if (player.velY > 0) {
-                player.jumping = false;
-                player.velY = 0;
-                player.y = plat.y - player.height;
+            if (obj.type === 'PLATFORM') {
+                // Land on platform
+                if (player.velY > 0 && player.y + player.height - player.velY <= obj.y) {
+                    player.jumping = false;
+                    player.velY = 0;
+                    player.y = obj.y - player.height;
+                }
+            } else if (obj.type === 'SPIKE') {
+                respawn(); // Ouch!
+            } else if (obj.type === 'GOAL') {
+                alert("Level Complete!");
+                // You could trigger nextLevel() here
+                respawn(); 
             }
         }
-    }
-
-    // Screen Bounds
-    if (player.x < 0) player.x = 0;
-    if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+    });
 
     draw();
     requestAnimationFrame(update);
@@ -82,16 +61,19 @@ function update() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw Platforms
-    ctx.fillStyle = '#2f3542';
-    platforms.forEach(plat => {
-        ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
+    
+    worldObjects.forEach(obj => {
+        if (obj.type === 'PLATFORM') ctx.fillStyle = '#2f3542';
+        else if (obj.type === 'SPIKE') ctx.fillStyle = '#ff4757';
+        else if (obj.type === 'GOAL') ctx.fillStyle = '#ffa502';
+        else if (obj.type === 'SPAWN') ctx.fillStyle = '#2ed573';
+        
+        ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
     });
 
-    // Draw Player
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.width, player.height);
 }
 
+initLevel();
 update();
