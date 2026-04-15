@@ -6,7 +6,7 @@ canvas.height = 400;
 
 // 1. GAME SETTINGS
 const gravity = 0.8;
-const friction = 0.9;
+const friction = 0.4;
 const keys = {};
 
 // 2. PLAYER DEFINITION (Must be before initLevel)
@@ -32,7 +32,19 @@ const LEVEL_DATABASE = [
     ],
     // Level 2
     [
-        const worldObjects = [{"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},{"x":2.5,"y":347.1875,"width":805,"height":59,"type":"SPIKE"},{"x":0.5,"y":351.1875,"width":9,"height":43,"type":"SPIKE"},{"x":-1.5,"y":347.1875,"width":28,"height":56,"type":"SPIKE"},{"x":38.5,"y":148.1875,"width":34,"height":27,"type":"SPAWN"},{"x":7.5,"y":181.1875,"width":106,"height":57,"type":"PLATFORM"},{"x":183.5,"y":189.1875,"width":42,"height":22,"type":"PLATFORM"},{"x":318.5,"y":253.1875,"width":42,"height":32,"type":"PLATFORM"},{"x":426.5,"y":318.1875,"width":70,"height":16,"type":"PLATFORM"},{"x":587.5,"y":253.1875,"width":55,"height":29,"type":"PLATFORM"},{"x":663.5,"y":22.1875,"width":19,"height":152,"type":"PLATFORM"},{"x":670.5,"y":173.1875,"width":127,"height":18,"type":"PLATFORM"},{"x":770.5,"y":142.1875,"width":30,"height":33,"type":"GOAL"}];
+       {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},
+       {"x":2.5,"y":347.1875,"width":805,"height":59,"type":"SPIKE"},
+        {"x":0.5,"y":351.1875,"width":9,"height":43,"type":"SPIKE"},
+        {"x":-1.5,"y":347.1875,"width":28,"height":56,"type":"SPIKE"},
+        {"x":38.5,"y":148.1875,"width":34,"height":27,"type":"SPAWN"},
+        {"x":7.5,"y":181.1875,"width":106,"height":57,"type":"PLATFORM"},
+        {"x":183.5,"y":189.1875,"width":42,"height":22,"type":"PLATFORM"},
+        {"x":318.5,"y":253.1875,"width":42,"height":32,"type":"PLATFORM"},
+        {"x":426.5,"y":318.1875,"width":70,"height":16,"type":"PLATFORM"},
+        {"x":587.5,"y":253.1875,"width":55,"height":29,"type":"PLATFORM"},
+        {"x":663.5,"y":22.1875,"width":19,"height":152,"type":"PLATFORM"},
+        {"x":670.5,"y":173.1875,"width":127,"height":18,"type":"PLATFORM"},
+        {"x":770.5,"y":142.1875,"width":30,"height":33,"type":"GOAL"}
     ]
 ];
 
