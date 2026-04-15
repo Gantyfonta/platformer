@@ -68,10 +68,10 @@ const LEVEL_DATABASE = [
         {"x":648.5,"y":22.1875,"width":69,"height":59,"type":"GOAL"},
         {"x":40.5,"y":278.1875,"width":39,"height":33,"type":"SPAWN"},
         {"x":5.5,"y":395.1875,"width":800,"height":12,"type":"SPIKE"}
-    ],
-    [
-        {"x":5.5,"y":45.1875,"width":84,"height":17,"type":"PLATFORM"},{"x":129.5,"y":0.1875,"width":20,"height":59,"type":"PLATFORM"},{"x":22.5,"y":6.1875,"width":19,"height":22,"type":"SPAWN"},{"x":-0.5,"y":148.1875,"width":147,"height":25,"type":"SPIKE"},{"x":144.5,"y":149.1875,"width":74,"height":29,"type":"SPIKE"},{"x":-0.5,"y":162.1875,"width":238,"height":62,"type":"PLATFORM"},{"x":184.5,"y":94.1875,"width":180,"height":131,"type":"PLATFORM"}
-        ]
+    ], 
+
+[{"x":5.5,"y":45.1875,"width":84,"height":17,"type":"PLATFORM"},{"x":129.5,"y":0.1875,"width":20,"height":59,"type":"PLATFORM"},{"x":22.5,"y":6.1875,"width":19,"height":22,"type":"SPAWN"},{"x":-0.5,"y":148.1875,"width":147,"height":25,"type":"SPIKE"},{"x":144.5,"y":149.1875,"width":74,"height":29,"type":"SPIKE"},{"x":-0.5,"y":162.1875,"width":238,"height":62,"type":"PLATFORM"},{"x":184.5,"y":94.1875,"width":180,"height":131,"type":"PLATFORM"},{"x":409.5,"y":-0.8125,"width":15,"height":228,"type":"PLATFORM"},{"x":302.5,"y":319.1875,"width":125,"height":28,"type":"SPIKE"},{"x":117.5,"y":326.1875,"width":191,"height":21,"type":"PLATFORM"},{"x":6.5,"y":393.1875,"width":794,"height":14,"type":"PLATFORM"},{"x":-0.5,"y":217.1875,"width":35,"height":190,"type":"PLATFORM"},{"x":417.5,"y":219.1875,"width":7,"height":107,"type":"SPIKE"},{"x":416.5,"y":218.1875,"width":265,"height":8,"type":"PLATFORM"},{"x":484.5,"y":350.1875,"width":30,"height":12,"type":"PLATFORM"},{"x":582.5,"y":305.1875,"width":50,"height":47,"type":"PLATFORM"},{"x":709.5,"y":288.1875,"width":79,"height":11,"type":"PLATFORM"}]
+    
 ];
 
 let currentLevelIndex = 0;
