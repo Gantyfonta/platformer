@@ -6,7 +6,7 @@ canvas.height = 400;
 
 // 1. GAME SETTINGS
 const gravity = 0.8;
-const friction = 0.4;
+const friction = 0.9;
 const keys = {};
 
 // 2. PLAYER DEFINITION (Must be before initLevel)
