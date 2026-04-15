@@ -78,6 +78,20 @@ let currentLevelIndex = 0;
 let worldObjects = [];
 let spawnPoint = { x: 50, y: 300 };
 
+// --- PORTAL LOGIC ---
+function setPlayerSize(newSize) {
+    if (player.width === newSize) return; // Do nothing if we are already this size
+
+    // Calculate how much taller/shorter we are getting
+    let heightDiff = newSize - player.height;
+    
+    player.width = newSize;
+    player.height = newSize;
+    
+    // Shift the player's Y position so they don't clip into the ground
+    player.y -= heightDiff; 
+}
+
 // 4. LEVEL LOGIC
 function initLevel() {
     worldObjects = LEVEL_DATABASE[currentLevelIndex];
