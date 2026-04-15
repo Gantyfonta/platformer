@@ -222,8 +222,12 @@ function update() {
                         player.velX = 0;
                     }
                 }
-            } else if (obj.type === 'SPIKE') respawn();
-            else if (obj.type === 'GOAL') nextLevel();
+           } else if (obj.type === 'SPIKE') respawn();
+    else if (obj.type === 'GOAL') nextLevel();
+    // --- NEW PORTAL COLLISIONS ---
+    else if (obj.type === 'PORTAL_SHRINK') setPlayerSize(15);
+    else if (obj.type === 'PORTAL_NORMAL') setPlayerSize(30);
+    else if (obj.type === 'PORTAL_GROW') setPlayerSize(45);
         }
     });
 
