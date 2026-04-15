@@ -29,7 +29,7 @@ const LEVEL_DATABASE = [
     [
         {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},{"x":50,"y":330,"width":30,"height":30,"type":"SPAWN"},{"x":700,"y":300,"width":50,"height":80,"type":"GOAL"},{"x":391.5,"y":254.1875,"width":51,"height":131,"type":"PLATFORM"},{"x":271.5,"y":313.1875,"width":60,"height":25,"type":"PLATFORM"}
     ],
-    [
+     [
         {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},
         {"x":2.5,"y":347.1875,"width":805,"height":59,"type":"SPIKE"},
         {"x":38.5,"y":148.1875,"width":34,"height":27,"type":"SPAWN"},
@@ -38,8 +38,7 @@ const LEVEL_DATABASE = [
         {"x":318.5,"y":253.1875,"width":42,"height":32,"type":"PLATFORM"},
         {"x":426.5,"y":318.1875,"width":70,"height":16,"type":"PLATFORM"},
         {"x":587.5,"y":253.1875,"width":55,"height":29,"type":"PLATFORM"},
-        {"x":663.5,"y":22.1875,"width":19,"height":152,"type":"PLATFORM"},
-        {"x":670.5,"y":173.1875,"width":127,"height":18,"type":"PLATFORM"},
+       {"x":670.5,"y":173.1875,"width":127,"height":18,"type":"PLATFORM"},
         {"x":770.5,"y":142.1875,"width":30,"height":33,"type":"GOAL"}
     ]
 ];
