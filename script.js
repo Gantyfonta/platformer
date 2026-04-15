@@ -8,6 +8,7 @@ canvas.height = 400;
 const gravity = 0.8;
 const friction = 0.9;
 const keys = {};
+let gameTime = 0; // New: Drives the movement of platforms
 
 // 2. PLAYER DEFINITION
 const player = {
@@ -23,6 +24,7 @@ const player = {
 };
 
 // 3. THE LEVEL DATABASE
+// Paste your exported code from the editor here!
 const LEVEL_DATABASE = [
     [
         {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},{"x":50,"y":330,"width":30,"height":30,"type":"SPAWN"},{"x":700,"y":300,"width":50,"height":80,"type":"GOAL"},{"x":391.5,"y":254.1875,"width":51,"height":131,"type":"PLATFORM"},{"x":271.5,"y":313.1875,"width":60,"height":25,"type":"PLATFORM"}
@@ -79,9 +81,31 @@ function nextLevel() {
 window.addEventListener('keydown', (e) => keys[e.code] = true);
 window.addEventListener('keyup', (e) => keys[e.code] = false);
 
-// 6. GAME ENGINE (Updated with Solid Walls)
+// 6. GAME ENGINE
 function update() {
-    // Inputs
+    // Increment game time (change 0.02 to make platforms faster/slower)
+    gameTime += 0.02;
+
+    // --- A. PRE-CALCULATE MOVING POSITIONS ---
+    worldObjects.forEach(obj => {
+        if (obj.isMoving) {
+            // Store the OLD position before moving it
+            obj.oldX = obj.currentX || obj.x;
+            obj.oldY = obj.currentY || obj.y;
+
+            // Calculate progress (0 to 1) using a sine wave for smooth back-and-forth
+            let progress = (Math.sin(gameTime) + 1) / 2;
+            
+            // Set current position based on start (x,y) and target (tx,ty)
+            obj.currentX = obj.x + (obj.tx - obj.x) * progress;
+            obj.currentY = obj.y + (obj.ty - obj.y) * progress;
+        } else {
+            obj.currentX = obj.x;
+            obj.currentY = obj.y;
+        }
+    });
+
+    // --- B. INPUTS ---
     if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && !player.jumping) {
         player.velY = -player.speed * 2.5;
         player.jumping = true;
@@ -96,35 +120,48 @@ function update() {
     player.velX *= friction;
     player.velY += gravity;
 
-    // Y-AXIS MOVE & COLLISION
+    // --- C. Y-AXIS MOVE & COLLISION ---
     player.y += player.velY;
     worldObjects.forEach(obj => {
-        if (player.x < obj.x + obj.width && player.x + player.width > obj.x &&
-            player.y < obj.y + obj.height && player.y + player.height > obj.y) {
+        if (player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
+            player.y < obj.currentY + obj.height && player.y + player.height > obj.currentY) {
             
             if (obj.type === 'PLATFORM') {
-                if (player.velY > 0) { // Falling onto top
+                if (player.velY > 0 && player.y + player.height - player.velY <= obj.currentY + 5) { 
                     player.jumping = false;
                     player.velY = 0;
-                    player.y = obj.y - player.height;
+                    player.y = obj.currentY - player.height;
+
+                    // Parent the player to the moving platform (Vertical push)
+                    if (obj.isMoving) {
+                        player.y += (obj.currentY - obj.oldY);
+                    }
                 }
             } else if (obj.type === 'SPIKE') respawn();
             else if (obj.type === 'GOAL') nextLevel();
         }
     });
 
-    // X-AXIS MOVE & COLLISION
+    // --- D. X-AXIS MOVE & COLLISION ---
     player.x += player.velX;
     worldObjects.forEach(obj => {
-        if (player.x < obj.x + obj.width && player.x + player.width > obj.x &&
-            player.y < obj.y + obj.height && player.y + player.height > obj.y) {
+        // Parent the player to moving platform (Horizontal push)
+        // We check if player is standing on the platform first
+        if (obj.isMoving && !player.jumping && 
+            player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
+            Math.abs((player.y + player.height) - obj.currentY) < 2) {
+            player.x += (obj.currentX - obj.oldX);
+        }
+
+        if (player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
+            player.y < obj.currentY + obj.height && player.y + player.height > obj.currentY) {
             
             if (obj.type === 'PLATFORM') {
-                if (player.velX > 0) { // Hit left side of wall
-                    player.x = obj.x - player.width;
+                if (player.velX > 0) { 
+                    player.x = obj.currentX - player.width;
                     player.velX = 0;
-                } else if (player.velX < 0) { // Hit right side of wall
-                    player.x = obj.x + obj.width;
+                } else if (player.velX < 0) {
+                    player.x = obj.currentX + obj.width;
                     player.velX = 0;
                 }
             } else if (obj.type === 'SPIKE') respawn();
@@ -144,25 +181,23 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // UI Text
     ctx.fillStyle = "white";
     ctx.font = "16px sans-serif";
     ctx.fillText(`Level: ${currentLevelIndex + 1}`, 20, 30);
 
-    // Objects
     worldObjects.forEach(obj => {
         if (obj.type === 'PLATFORM') ctx.fillStyle = '#2f3542';
         else if (obj.type === 'SPIKE') ctx.fillStyle = '#ff4757';
         else if (obj.type === 'GOAL') ctx.fillStyle = '#ffa502';
         else if (obj.type === 'SPAWN') ctx.fillStyle = '#2ed573';
-        ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+        
+        // Use the animated currentX/Y for drawing
+        ctx.fillRect(obj.currentX, obj.currentY, obj.width, obj.height);
     });
 
-    // Player
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.width, player.height);
 }
 
-// START GAME
 initLevel();
 update();
