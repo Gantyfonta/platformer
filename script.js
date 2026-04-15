@@ -40,7 +40,8 @@ const LEVEL_DATABASE = [
         {"x":587.5,"y":253.1875,"width":55,"height":29,"type":"PLATFORM"},
        {"x":670.5,"y":173.1875,"width":127,"height":18,"type":"PLATFORM"},
         {"x":770.5,"y":142.1875,"width":30,"height":33,"type":"GOAL"}
-    ]
+    ],
+    [{"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},{"x":173.5,"y":107.1875,"width":483,"height":23,"type":"SPIKE","tx":172.5,"ty":356.1875,"isMoving":true}]
 ];
 
 let currentLevelIndex = 0;
