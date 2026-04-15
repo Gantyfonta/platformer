@@ -125,36 +125,16 @@ window.addEventListener('keyup', (e) => keys[e.code] = false);
 
 // 6. GAME ENGINE
 function update() {
-
-// --- TIMER LOGIC ---
-    // Start timer on first move
-    if (!timerRunning && !timerFinished) {
-        if (keys['ArrowUp'] || keys['Space'] || keys['KeyW'] || 
-            keys['ArrowLeft'] || keys['KeyA'] || keys['ArrowRight'] || keys['KeyD']) {
-            startTime = Date.now();
-            timerRunning = true;
-        }
-    }
-
-    // Update elapsed time while running
-    if (timerRunning) {
-        elapsedTime = Date.now() - startTime;
-    }
-    
-    // Increment game time (change 0.02 to make platforms faster/slower)
+    // Increment game time
     gameTime += 0.02;
 
-    // --- A. PRE-CALCULATE MOVING POSITIONS ---
+    // --- 1. UPDATE PLATFORM POSITIONS ---
     worldObjects.forEach(obj => {
         if (obj.isMoving) {
-            // Store the OLD position before moving it
             obj.oldX = obj.currentX || obj.x;
             obj.oldY = obj.currentY || obj.y;
 
-            // Calculate progress (0 to 1) using a sine wave for smooth back-and-forth
             let progress = (Math.sin(gameTime) + 1) / 2;
-            
-            // Set current position based on start (x,y) and target (tx,ty)
             obj.currentX = obj.x + (obj.tx - obj.x) * progress;
             obj.currentY = obj.y + (obj.ty - obj.y) * progress;
         } else {
@@ -163,6 +143,90 @@ function update() {
         }
     });
 
+    // --- 2. TIMER & INPUTS ---
+    if (!timerRunning && !timerFinished) {
+        if (keys['ArrowUp'] || keys['Space'] || keys['KeyW'] || 
+            keys['ArrowLeft'] || keys['KeyA'] || keys['ArrowRight'] || keys['KeyD']) {
+            startTime = Date.now();
+            timerRunning = true;
+        }
+    }
+    if (timerRunning) elapsedTime = Date.now() - startTime;
+
+    if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && !player.jumping) {
+        player.velY = -player.speed * 2.5;
+        player.jumping = true;
+    }
+    if (keys['ArrowLeft'] || keys['KeyA']) {
+        if (player.velX > -player.speed) player.velX--;
+    }
+    if (keys['ArrowRight'] || keys['KeyD']) {
+        if (player.velX < player.speed) player.velX++;
+    }
+
+    player.velX *= friction;
+    player.velY += gravity;
+
+    // --- 3. Y-AXIS MOVE & COLLISION ---
+    player.y += player.velY;
+    worldObjects.forEach(obj => {
+        if (player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
+            player.y < obj.currentY + obj.height && player.y + player.height > obj.currentY) {
+            
+            if (obj.type === 'PLATFORM') {
+                // If falling or moving down onto the platform
+                if (player.velY >= 0 && player.y + player.height - player.velY <= obj.currentY + 10) { 
+                    player.jumping = false;
+                    player.velY = 0;
+                    player.y = obj.currentY - player.height;
+
+                    // Stick to platform vertically
+                    if (obj.isMoving) {
+                        player.y += (obj.currentY - obj.oldY);
+                    }
+                }
+            } else if (obj.type === 'SPIKE') respawn();
+            else if (obj.type === 'GOAL') nextLevel();
+        }
+    });
+
+    // --- 4. X-AXIS MOVE & COLLISION ---
+    player.x += player.velX;
+    worldObjects.forEach(obj => {
+        // Parent the player to moving platform (Horizontal move)
+        if (obj.isMoving && !player.jumping && 
+            player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
+            player.y + player.height >= obj.currentY - 5 && player.y + player.height <= obj.currentY + 10) {
+            player.x += (obj.currentX - obj.oldX);
+        }
+
+        if (player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
+            player.y < obj.currentY + obj.height && player.y + player.height > obj.currentY) {
+            
+            if (obj.type === 'PLATFORM') {
+                // BUG FIX: Only trigger side-collision if we aren't "on top" of the platform
+                // We check if the player's feet are significantly lower than the platform's top
+                if (player.y + player.height > obj.currentY + 5) {
+                    if (player.velX > 0) { 
+                        player.x = obj.currentX - player.width;
+                        player.velX = 0;
+                    } else if (player.velX < 0) {
+                        player.x = obj.currentX + obj.width;
+                        player.velX = 0;
+                    }
+                }
+            } else if (obj.type === 'SPIKE') respawn();
+            else if (obj.type === 'GOAL') nextLevel();
+        }
+    });
+
+    // Screen Bounds
+    if (player.x < 0) player.x = 0;
+    if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+
+    draw();
+    requestAnimationFrame(update);
+}
     // --- B. INPUTS ---
     if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && !player.jumping) {
         player.velY = -player.speed * 2.5;
