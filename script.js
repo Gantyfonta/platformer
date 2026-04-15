@@ -129,9 +129,27 @@ function nextLevel() {
 window.addEventListener('keydown', (e) => keys[e.code] = true);
 window.addEventListener('keyup', (e) => keys[e.code] = false);
 
-// 6. GAME ENGINE
-function update() {
-    gameTime += 0.02;
+// --- UPDATED SETTINGS FOR DELTA TIME ---
+const gravity = 1500;    // Pixels per second squared
+const friction = 0.001;  // Exponential decay factor
+const jumpForce = -700;  // Upward velocity
+const moveSpeed = 400;   // Max horizontal pixels per second
+const acceleration = 2000; 
+
+let lastTime = 0;
+
+// 6. UPDATED GAME ENGINE
+function update(timestamp) {
+    // A. Calculate Delta Time (seconds passed since last frame)
+    if (!lastTime) lastTime = timestamp;
+    let dt = (timestamp - lastTime) / 1000; 
+    lastTime = timestamp;
+
+    // Prevent massive jumps if the user switches tabs (limit dt to 0.1s)
+    if (dt > 0.1) dt = 0.1;
+
+    // Increment game time for moving platforms
+    gameTime += dt * 2; // Adjusted multiplier to keep platform speed similar
 
     // --- 1. UPDATE PLATFORM POSITIONS ---
     worldObjects.forEach(obj => {
@@ -158,52 +176,62 @@ function update() {
     }
     if (timerRunning) elapsedTime = Date.now() - startTime;
 
-    // --- 3. INPUTS & PHYSICS ---
+    // --- 3. INPUTS & PHYSICS (Time-Based) ---
     if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && !player.jumping) {
-        player.velY = -player.speed * 2.5;
+        player.velY = jumpForce;
         player.jumping = true;
     }
     
-    // Smooth Acceleration
-    if (keys['ArrowLeft'] || keys['KeyA']) player.velX -= 1.5; 
-    if (keys['ArrowRight'] || keys['KeyD']) player.velX += 1.5;
+    if (keys['ArrowLeft'] || keys['KeyA']) {
+        player.velX -= acceleration * dt;
+    } else if (keys['ArrowRight'] || keys['KeyD']) {
+        player.velX += acceleration * dt;
+    } else {
+        // Apply friction only when not pressing keys
+        player.velX *= Math.pow(friction, dt);
+    }
 
-    player.velX *= friction;
-    player.velY += gravity;
+    // Apply Gravity
+    player.velY += gravity * dt;
 
-    // HARD SPEED LIMITS
-    if (player.velX > player.speed) player.velX = player.speed;
-    if (player.velX < -player.speed) player.velX = -player.speed;
-    if (Math.abs(player.velX) < 0.1) player.velX = 0; // Prevent infinite sliding
+    // Hard Speed Limits
+    if (player.velX > moveSpeed) player.velX = moveSpeed;
+    if (player.velX < -moveSpeed) player.velX = -moveSpeed;
 
-   // --- 4. Y-AXIS MOVE & COLLISION ---
-    player.y += player.velY;
+    // --- 4. Y-AXIS MOVE & COLLISION ---
+    player.y += player.velY * dt; // Velocity * Time = Distance
+    
     worldObjects.forEach(obj => {
         if (player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
             player.y < obj.currentY + obj.height && player.y + player.height > obj.currentY) {
             
             if (obj.type === 'PLATFORM') {
-                // 1. Landing on TOP of the platform
-                if (player.velY >= 0 && player.y + player.height - player.velY <= obj.currentY + 10) { 
+                // Landing on Top
+                if (player.velY >= 0 && (player.y + player.height) - (player.velY * dt) <= obj.currentY + 10) { 
                     player.jumping = false;
                     player.velY = 0;
                     player.y = obj.currentY - player.height;
-
                     if (obj.isMoving) player.y += (obj.currentY - obj.oldY);
                 } 
-                // 2. Hitting the BOTTOM of the platform (Head Bonk)
-                else if (player.velY < 0 && player.y - player.velY >= obj.currentY + obj.height - 10) {
-                    player.velY = 0; // Stop upward momentum so gravity pulls you down
-                    player.y = obj.currentY + obj.height; // Snap exactly to the bottom edge
+                // Head Bonk (The fix we added earlier)
+                else if (player.velY < 0 && player.y - (player.velY * dt) >= obj.currentY + obj.height - 10) {
+                    player.velY = 0;
+                    player.y = obj.currentY + obj.height;
                 }
-            } else if (obj.type === 'SPIKE') respawn();
+            } 
+            else if (obj.type === 'SPIKE') respawn();
             else if (obj.type === 'GOAL') nextLevel();
+            else if (obj.type === 'PORTAL_SHRINK') setPlayerSize(15);
+            else if (obj.type === 'PORTAL_NORMAL') setPlayerSize(30);
+            else if (obj.type === 'PORTAL_GROW') setPlayerSize(45);
         }
     });
 
     // --- 5. X-AXIS MOVE & COLLISION ---
-    player.x += player.velX;
+    player.x += player.velX * dt;
+    
     worldObjects.forEach(obj => {
+        // Parent to moving platform
         if (obj.isMoving && !player.jumping && 
             player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
             player.y + player.height >= obj.currentY - 5 && player.y + player.height <= obj.currentY + 10) {
@@ -215,20 +243,11 @@ function update() {
             
             if (obj.type === 'PLATFORM') {
                 if (player.y + player.height > obj.currentY + 5) {
-                    if (player.velX > 0) { 
-                        player.x = obj.currentX - player.width;
-                        player.velX = 0;
-                    } else if (player.velX < 0) {
-                        player.x = obj.currentX + obj.width;
-                        player.velX = 0;
-                    }
+                    if (player.velX > 0) { player.x = obj.currentX - player.width; player.velX = 0; }
+                    else if (player.velX < 0) { player.x = obj.currentX + obj.width; player.velX = 0; }
                 }
-           } else if (obj.type === 'SPIKE') respawn();
-    else if (obj.type === 'GOAL') nextLevel();
-    // --- NEW PORTAL COLLISIONS ---
-    else if (obj.type === 'PORTAL_SHRINK') setPlayerSize(15);
-    else if (obj.type === 'PORTAL_NORMAL') setPlayerSize(30);
-    else if (obj.type === 'PORTAL_GROW') setPlayerSize(45);
+            } else if (obj.type === 'SPIKE') respawn();
+            else if (obj.type === 'GOAL') nextLevel();
         }
     });
 
@@ -240,6 +259,9 @@ function update() {
     requestAnimationFrame(update);
 }
 
+// BOOT UP
+initLevel();
+requestAnimationFrame(update); // Start the loop with the timestamp
 // 7. DRAWING FUNCTION
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
