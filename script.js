@@ -26,9 +26,7 @@ const player = {
 const LEVEL_DATABASE = [
     // Level 1
     [
-        {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},
-        {"x":50,"y":330,"width":30,"height":30,"type":"SPAWN"},
-        {"x":700,"y":300,"width":50,"height":80,"type":"GOAL"}
+        {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},{"x":50,"y":330,"width":30,"height":30,"type":"SPAWN"},{"x":700,"y":300,"width":50,"height":80,"type":"GOAL"},{"x":391.5,"y":254.1875,"width":51,"height":131,"type":"PLATFORM"},{"x":271.5,"y":313.1875,"width":60,"height":25,"type":"PLATFORM"}
     ],
     // Level 2
     [
