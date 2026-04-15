@@ -101,12 +101,21 @@ function respawn() {
 
 function nextLevel() {
     currentLevelIndex++;
+    
     if (currentLevelIndex < LEVEL_DATABASE.length) {
         initLevel();
     } else {
-        alert("🎉 YOU WIN!");
-        currentLevelIndex = 0;
-        initLevel();
+        // --- STOP THE TIMER HERE ---
+        timerRunning = false;
+        timerFinished = true;
+        
+        alert(`🎉 YOU WIN!\nFinal Time: ${formatTime(elapsedTime)}`);
+        
+        // Optional: Reset for a new run
+        // currentLevelIndex = 0;
+        // timerFinished = false;
+        // elapsedTime = 0;
+        // initLevel();
     }
 }
 
