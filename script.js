@@ -17,11 +17,15 @@ function formatTime(ms) {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
 }
 
-// 1. GAME SETTINGS
-const gravity = 0.8;
-const friction = 0.85; // Tightened for less sliding
-const keys = {};
-let gameTime = 0; 
+// --- 1. SETTINGS (Time-Based) ---
+const gravity = 1500;    
+const friction = 0.001;  
+const jumpForce = -700;  
+const moveSpeed = 400;   
+const acceleration = 2000; 
+
+let lastTime = 0; // Required for Delta Time calculation
+let gameTime = 0; // Required for moving platforms
 
 // 2. PLAYER DEFINITION
 const player = {
