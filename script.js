@@ -105,6 +105,8 @@ function initLevel() {
 function respawn() {
     player.x = spawnPoint.x;
     player.y = spawnPoint.y;
+    player.width = 30;  // <-- Add this
+    player.height = 30; // <-- Add this
     player.velX = 0;
     player.velY = 0;
     player.jumping = false;
