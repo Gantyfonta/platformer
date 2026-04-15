@@ -68,7 +68,10 @@ const LEVEL_DATABASE = [
         {"x":648.5,"y":22.1875,"width":69,"height":59,"type":"GOAL"},
         {"x":40.5,"y":278.1875,"width":39,"height":33,"type":"SPAWN"},
         {"x":5.5,"y":395.1875,"width":800,"height":12,"type":"SPIKE"}
-    ]
+    ],
+    [
+        {"x":5.5,"y":45.1875,"width":84,"height":17,"type":"PLATFORM"},{"x":129.5,"y":0.1875,"width":20,"height":59,"type":"PLATFORM"},{"x":22.5,"y":6.1875,"width":19,"height":22,"type":"SPAWN"},{"x":-0.5,"y":148.1875,"width":147,"height":25,"type":"SPIKE"},{"x":144.5,"y":149.1875,"width":74,"height":29,"type":"SPIKE"},{"x":-0.5,"y":162.1875,"width":238,"height":62,"type":"PLATFORM"},{"x":184.5,"y":94.1875,"width":180,"height":131,"type":"PLATFORM"}
+        ]
 ];
 
 let currentLevelIndex = 0;
