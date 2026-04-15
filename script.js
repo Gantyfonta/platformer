@@ -252,6 +252,10 @@ function draw() {
         else if (obj.type === 'SPIKE') ctx.fillStyle = '#ff4757';
         else if (obj.type === 'GOAL') ctx.fillStyle = '#ffa502';
         else if (obj.type === 'SPAWN') ctx.fillStyle = '#2ed573';
+
+        else if (obj.type === 'PORTAL_SHRINK') ctx.fillStyle = '#9c88ff'; // Purple
+        else if (obj.type === 'PORTAL_GROW') ctx.fillStyle = '#e1b12c';   // Gold
+        else if (obj.type === 'PORTAL_NORMAL') ctx.fillStyle = '#00a8ff'; // Blue
         
         ctx.fillRect(obj.currentX, obj.currentY, obj.width, obj.height);
     });
