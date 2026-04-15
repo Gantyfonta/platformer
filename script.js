@@ -1,6 +1,21 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// --- SPEEDRUN TIMER VARIABLES ---
+let startTime = 0;
+let elapsedTime = 0;
+let timerRunning = false;
+let timerFinished = false;
+
+// Helper function to turn milliseconds into a pretty string (00:00.00)
+function formatTime(ms) {
+    let minutes = Math.floor(ms / 60000);
+    let seconds = Math.floor((ms % 60000) / 1000);
+    let centiseconds = Math.floor((ms % 1000) / 10);
+    
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
+}
+
 canvas.width = 800;
 canvas.height = 400;
 
@@ -101,6 +116,22 @@ window.addEventListener('keyup', (e) => keys[e.code] = false);
 
 // 6. GAME ENGINE
 function update() {
+
+// --- TIMER LOGIC ---
+    // Start timer on first move
+    if (!timerRunning && !timerFinished) {
+        if (keys['ArrowUp'] || keys['Space'] || keys['KeyW'] || 
+            keys['ArrowLeft'] || keys['KeyA'] || keys['ArrowRight'] || keys['KeyD']) {
+            startTime = Date.now();
+            timerRunning = true;
+        }
+    }
+
+    // Update elapsed time while running
+    if (timerRunning) {
+        elapsedTime = Date.now() - startTime;
+    }
+    
     // Increment game time (change 0.02 to make platforms faster/slower)
     gameTime += 0.02;
 
