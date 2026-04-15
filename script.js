@@ -4,7 +4,18 @@ const ctx = canvas.getContext('2d');
 canvas.width = 800;
 canvas.height = 400;
 
-// --- SPEEDRUN TIMER VARIABLES ---
+// --- 1. SETTINGS & VARIABLES ---
+const gravity = 1500;    
+const friction = 0.001;  
+const jumpForce = -700;  
+const moveSpeed = 400;   
+const acceleration = 2000; 
+
+let lastTime = 0; 
+let gameTime = 0; 
+const keys = {}; // Fixed: Added missing keys object
+
+// Speedrun Timer
 let startTime = 0;
 let elapsedTime = 0;
 let timerRunning = false;
@@ -17,23 +28,12 @@ function formatTime(ms) {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
 }
 
-// --- 1. SETTINGS (Time-Based) ---
-const gravity = 1500;    
-const friction = 0.001;  
-const jumpForce = -700;  
-const moveSpeed = 400;   
-const acceleration = 2000; 
-
-let lastTime = 0; // Required for Delta Time calculation
-let gameTime = 0; // Required for moving platforms
-
 // 2. PLAYER DEFINITION
 const player = {
     x: 50,
     y: 300,
     width: 30,
     height: 30,
-    speed: 5, // Max speed
     velX: 0,
     velY: 0,
     jumping: false,
@@ -73,10 +73,9 @@ const LEVEL_DATABASE = [
         {"x":40.5,"y":278.1875,"width":39,"height":33,"type":"SPAWN"},
         {"x":5.5,"y":395.1875,"width":800,"height":12,"type":"SPIKE"}
     ], 
-
-[{"x":5.5,"y":45.1875,"width":84,"height":17,"type":"PLATFORM"},{"x":129.5,"y":0.1875,"width":20,"height":59,"type":"PLATFORM"},{"x":22.5,"y":6.1875,"width":19,"height":22,"type":"SPAWN"},{"x":-0.5,"y":148.1875,"width":147,"height":25,"type":"SPIKE"},{"x":144.5,"y":149.1875,"width":74,"height":29,"type":"SPIKE"},{"x":-0.5,"y":162.1875,"width":238,"height":62,"type":"PLATFORM"},{"x":184.5,"y":94.1875,"width":180,"height":131,"type":"PLATFORM"},{"x":409.5,"y":-0.8125,"width":15,"height":228,"type":"PLATFORM"},{"x":302.5,"y":319.1875,"width":125,"height":28,"type":"SPIKE"},{"x":117.5,"y":326.1875,"width":191,"height":21,"type":"PLATFORM"},{"x":6.5,"y":393.1875,"width":794,"height":14,"type":"PLATFORM"},{"x":-0.5,"y":217.1875,"width":35,"height":190,"type":"PLATFORM"},{"x":417.5,"y":219.1875,"width":7,"height":107,"type":"SPIKE"},{"x":416.5,"y":218.1875,"width":265,"height":8,"type":"PLATFORM"},{"x":484.5,"y":350.1875,"width":30,"height":12,"type":"PLATFORM"},{"x":582.5,"y":305.1875,"width":50,"height":47,"type":"PLATFORM"},{"x":709.5,"y":288.1875,"width":79,"height":11,"type":"PLATFORM"},{"x":593.5,"y":4.1875,"width":9,"height":82,"type":"PLATFORM"},{"x":590.5,"y":-0.8125,"width":211,"height":9,"type":"PLATFORM"},{"x":599.5,"y":78.1875,"width":142,"height":8,"type":"PLATFORM"},{"x":743.5,"y":80.1875,"width":58,"height":7,"type":"PLATFORM","tx":683.5,"ty":79.1875,"isMoving":true},{"x":613.5,"y":24.1875,"width":31,"height":26,"type":"GOAL"},{"x":618.5,"y":62.1875,"width":39,"height":15,"type":"PORTAL_SHRINK"},{"x":654.5,"y":134.1875,"width":100,"height":20,"type":"PLATFORM"}]
-
-    
+    [
+        {"x":5.5,"y":45.1875,"width":84,"height":17,"type":"PLATFORM"},{"x":129.5,"y":0.1875,"width":20,"height":59,"type":"PLATFORM"},{"x":22.5,"y":6.1875,"width":19,"height":22,"type":"SPAWN"},{"x":-0.5,"y":148.1875,"width":147,"height":25,"type":"SPIKE"},{"x":144.5,"y":149.1875,"width":74,"height":29,"type":"SPIKE"},{"x":-0.5,"y":162.1875,"width":238,"height":62,"type":"PLATFORM"},{"x":184.5,"y":94.1875,"width":180,"height":131,"type":"PLATFORM"},{"x":409.5,"y":-0.8125,"width":15,"height":228,"type":"PLATFORM"},{"x":302.5,"y":319.1875,"width":125,"height":28,"type":"SPIKE"},{"x":117.5,"y":326.1875,"width":191,"height":21,"type":"PLATFORM"},{"x":6.5,"y":393.1875,"width":794,"height":14,"type":"PLATFORM"},{"x":-0.5,"y":217.1875,"width":35,"height":190,"type":"PLATFORM"},{"x":417.5,"y":219.1875,"width":7,"height":107,"type":"SPIKE"},{"x":416.5,"y":218.1875,"width":265,"height":8,"type":"PLATFORM"},{"x":484.5,"y":350.1875,"width":30,"height":12,"type":"PLATFORM"},{"x":582.5,"y":305.1875,"width":50,"height":47,"type":"PLATFORM"},{"x":709.5,"y":288.1875,"width":79,"height":11,"type":"PLATFORM"},{"x":593.5,"y":4.1875,"width":9,"height":82,"type":"PLATFORM"},{"x":590.5,"y":-0.8125,"width":211,"height":9,"type":"PLATFORM"},{"x":599.5,"y":78.1875,"width":142,"height":8,"type":"PLATFORM"},{"x":743.5,"y":80.1875,"width":58,"height":7,"type":"PLATFORM","tx":683.5,"ty":79.1875,"isMoving":true},{"x":613.5,"y":24.1875,"width":31,"height":26,"type":"GOAL"},{"x":618.5,"y":62.1875,"width":39,"height":15,"type":"PORTAL_SHRINK"},{"x":654.5,"y":134.1875,"width":100,"height":20,"type":"PLATFORM"}
+    ]
 ];
 
 let currentLevelIndex = 0;
@@ -85,15 +84,10 @@ let spawnPoint = { x: 50, y: 300 };
 
 // --- PORTAL LOGIC ---
 function setPlayerSize(newSize) {
-    if (player.width === newSize) return; // Do nothing if we are already this size
-
-    // Calculate how much taller/shorter we are getting
+    if (player.width === newSize) return; 
     let heightDiff = newSize - player.height;
-    
     player.width = newSize;
     player.height = newSize;
-    
-    // Shift the player's Y position so they don't clip into the ground
     player.y -= heightDiff; 
 }
 
@@ -110,8 +104,8 @@ function initLevel() {
 function respawn() {
     player.x = spawnPoint.x;
     player.y = spawnPoint.y;
-    player.width = 30;  // <-- Add this
-    player.height = 30; // <-- Add this
+    player.width = 30; 
+    player.height = 30;
     player.velX = 0;
     player.velY = 0;
     player.jumping = false;
@@ -119,7 +113,6 @@ function respawn() {
 
 function nextLevel() {
     currentLevelIndex++;
-    
     if (currentLevelIndex < LEVEL_DATABASE.length) {
         initLevel();
     } else {
@@ -133,34 +126,20 @@ function nextLevel() {
 window.addEventListener('keydown', (e) => keys[e.code] = true);
 window.addEventListener('keyup', (e) => keys[e.code] = false);
 
-// --- UPDATED SETTINGS FOR DELTA TIME ---
-const gravity = 1500;    // Pixels per second squared
-const friction = 0.001;  // Exponential decay factor
-const jumpForce = -700;  // Upward velocity
-const moveSpeed = 400;   // Max horizontal pixels per second
-const acceleration = 2000; 
-
-let lastTime = 0;
-
-// 6. UPDATED GAME ENGINE
+// 6. GAME ENGINE
 function update(timestamp) {
-    // A. Calculate Delta Time (seconds passed since last frame)
     if (!lastTime) lastTime = timestamp;
     let dt = (timestamp - lastTime) / 1000; 
     lastTime = timestamp;
 
-    // Prevent massive jumps if the user switches tabs (limit dt to 0.1s)
     if (dt > 0.1) dt = 0.1;
-
-    // Increment game time for moving platforms
-    gameTime += dt * 2; // Adjusted multiplier to keep platform speed similar
+    gameTime += dt * 2; 
 
     // --- 1. UPDATE PLATFORM POSITIONS ---
     worldObjects.forEach(obj => {
         if (obj.isMoving) {
             obj.oldX = obj.currentX || obj.x;
             obj.oldY = obj.currentY || obj.y;
-
             let progress = (Math.sin(gameTime) + 1) / 2;
             obj.currentX = obj.x + (obj.tx - obj.x) * progress;
             obj.currentY = obj.y + (obj.ty - obj.y) * progress;
@@ -180,7 +159,7 @@ function update(timestamp) {
     }
     if (timerRunning) elapsedTime = Date.now() - startTime;
 
-    // --- 3. INPUTS & PHYSICS (Time-Based) ---
+    // --- 3. INPUTS & PHYSICS ---
     if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && !player.jumping) {
         player.velY = jumpForce;
         player.jumping = true;
@@ -191,33 +170,28 @@ function update(timestamp) {
     } else if (keys['ArrowRight'] || keys['KeyD']) {
         player.velX += acceleration * dt;
     } else {
-        // Apply friction only when not pressing keys
         player.velX *= Math.pow(friction, dt);
     }
 
-    // Apply Gravity
     player.velY += gravity * dt;
 
-    // Hard Speed Limits
     if (player.velX > moveSpeed) player.velX = moveSpeed;
     if (player.velX < -moveSpeed) player.velX = -moveSpeed;
 
     // --- 4. Y-AXIS MOVE & COLLISION ---
-    player.y += player.velY * dt; // Velocity * Time = Distance
+    player.y += player.velY * dt; 
     
     worldObjects.forEach(obj => {
         if (player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
             player.y < obj.currentY + obj.height && player.y + player.height > obj.currentY) {
             
             if (obj.type === 'PLATFORM') {
-                // Landing on Top
                 if (player.velY >= 0 && (player.y + player.height) - (player.velY * dt) <= obj.currentY + 10) { 
                     player.jumping = false;
                     player.velY = 0;
                     player.y = obj.currentY - player.height;
                     if (obj.isMoving) player.y += (obj.currentY - obj.oldY);
                 } 
-                // Head Bonk (The fix we added earlier)
                 else if (player.velY < 0 && player.y - (player.velY * dt) >= obj.currentY + obj.height - 10) {
                     player.velY = 0;
                     player.y = obj.currentY + obj.height;
@@ -235,7 +209,6 @@ function update(timestamp) {
     player.x += player.velX * dt;
     
     worldObjects.forEach(obj => {
-        // Parent to moving platform
         if (obj.isMoving && !player.jumping && 
             player.x < obj.currentX + obj.width && player.x + player.width > obj.currentX &&
             player.y + player.height >= obj.currentY - 5 && player.y + player.height <= obj.currentY + 10) {
@@ -255,7 +228,6 @@ function update(timestamp) {
         }
     });
 
-    // Screen Bounds
     if (player.x < 0) player.x = 0;
     if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
 
@@ -263,9 +235,6 @@ function update(timestamp) {
     requestAnimationFrame(update);
 }
 
-// BOOT UP
-initLevel();
-requestAnimationFrame(update); // Start the loop with the timestamp
 // 7. DRAWING FUNCTION
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -279,10 +248,9 @@ function draw() {
         else if (obj.type === 'SPIKE') ctx.fillStyle = '#ff4757';
         else if (obj.type === 'GOAL') ctx.fillStyle = '#ffa502';
         else if (obj.type === 'SPAWN') ctx.fillStyle = '#2ed573';
-
-        else if (obj.type === 'PORTAL_SHRINK') ctx.fillStyle = '#9c88ff'; // Purple
-        else if (obj.type === 'PORTAL_GROW') ctx.fillStyle = '#e1b12c';   // Gold
-        else if (obj.type === 'PORTAL_NORMAL') ctx.fillStyle = '#00a8ff'; // Blue
+        else if (obj.type === 'PORTAL_SHRINK') ctx.fillStyle = '#9c88ff';
+        else if (obj.type === 'PORTAL_GROW') ctx.fillStyle = '#e1b12c';
+        else if (obj.type === 'PORTAL_NORMAL') ctx.fillStyle = '#00a8ff';
         
         ctx.fillRect(obj.currentX, obj.currentY, obj.width, obj.height);
     });
@@ -290,7 +258,6 @@ function draw() {
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
-    // --- DRAW TIMER ---
     ctx.fillStyle = "white";
     ctx.font = "bold 20px monospace";
     ctx.textAlign = "right";
@@ -298,6 +265,6 @@ function draw() {
     ctx.textAlign = "left"; 
 }
 
-// BOOT UP
+// START THE GAME
 initLevel();
-update();
+requestAnimationFrame(update);
