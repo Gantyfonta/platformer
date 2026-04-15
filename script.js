@@ -297,7 +297,6 @@ function update() {
 
     draw();
     requestAnimationFrame(update);
-}
 
 // 7. DRAWING FUNCTION
 function draw() {
