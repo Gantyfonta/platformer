@@ -5,9 +5,9 @@ canvas.width = 800;
 canvas.height = 400;
 
 // --- 1. SETTINGS & VARIABLES ---
-const gravity = 1500;    
+const gravity = 1000;    
 const friction = 0.001;  
-const jumpForce = -700;  
+const jumpForce = -500;  
 const moveSpeed = 400;   
 const acceleration = 2000; 
 
