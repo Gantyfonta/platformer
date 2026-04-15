@@ -84,12 +84,11 @@ window.addEventListener('keyup', (e) => keys[e.code] = false);
 
 // 6. GAME ENGINE
 function update() {
-    // Jump
+    // --- 1. INPUTS ---
     if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && !player.jumping) {
         player.velY = -player.speed * 2.5;
         player.jumping = true;
     }
-    // Left/Right
     if (keys['ArrowLeft'] || keys['KeyA']) {
         if (player.velX > -player.speed) player.velX--;
     }
@@ -97,61 +96,62 @@ function update() {
         if (player.velX < player.speed) player.velX++;
     }
 
+    // --- 2. PHYSICS ---
     player.velX *= friction;
     player.velY += gravity;
 
+    // --- 3. Y-AXIS MOVEMENT & COLLISION ---
     player.y += player.velY;
-    player.x += player.velX;
-
-    // Collision Logic
+    
     worldObjects.forEach(obj => {
-        if (player.x < obj.x + obj.width &&
-            player.x + player.width > obj.x &&
-            player.y < obj.y + obj.height &&
-            player.y + player.height > obj.y) {
+        if (player.x < obj.x + obj.width && player.x + player.width > obj.x &&
+            player.y < obj.y + obj.height && player.y + player.height > obj.y) {
             
             if (obj.type === 'PLATFORM') {
-                if (player.velY > 0 && player.y + player.height - player.velY <= obj.y) {
+                if (player.velY > 0) { // Falling onto top
                     player.jumping = false;
                     player.velY = 0;
                     player.y = obj.y - player.height;
+                } else if (player.velY < 0) { // Hitting head on bottom
+                    // If you want to go THROUGH the bottom, do nothing here.
+                    // If you want to hit your head, uncomment the next 2 lines:
+                    // player.velY = 0;
+                    // player.y = obj.y + obj.height;
                 }
-            } else if (obj.type === 'SPIKE') {
-                respawn();
-            } else if (obj.type === 'GOAL') {
-                nextLevel();
-            }
+            } else if (obj.type === 'SPIKE') respawn();
+            else if (obj.type === 'GOAL') nextLevel();
         }
     });
 
-    // Screen Bounds
+    // --- 4. X-AXIS MOVEMENT & COLLISION ---
+    player.x += player.velX;
+
+    worldObjects.forEach(obj => {
+        if (player.x < obj.x + obj.width && player.x + player.width > obj.x &&
+            player.y < obj.y + obj.height && player.y + player.height > obj.y) {
+            
+            if (obj.type === 'PLATFORM') {
+                // If moving right and hitting left wall
+                if (player.velX > 0) {
+                    player.x = obj.x - player.width;
+                    player.velX = 0;
+                }
+                // If moving left and hitting right wall
+                else if (player.velX < 0) {
+                    player.x = obj.x + obj.width;
+                    player.velX = 0;
+                }
+            } else if (obj.type === 'SPIKE') respawn();
+            else if (obj.type === 'GOAL') nextLevel();
+        }
+    });
+
+    // --- 5. SCREEN BOUNDS ---
     if (player.x < 0) player.x = 0;
     if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
 
     draw();
     requestAnimationFrame(update);
-}
-
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // UI
-    ctx.fillStyle = "white";
-    ctx.font = "16px sans-serif";
-    ctx.fillText(`Level: ${currentLevelIndex + 1}`, 20, 30);
-
-    // Objects
-    worldObjects.forEach(obj => {
-        if (obj.type === 'PLATFORM') ctx.fillStyle = '#2f3542';
-        else if (obj.type === 'SPIKE') ctx.fillStyle = '#ff4757';
-        else if (obj.type === 'GOAL') ctx.fillStyle = '#ffa502';
-        else if (obj.type === 'SPAWN') ctx.fillStyle = '#2ed573';
-        ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
-    });
-
-    // Player
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
 }
 
 // 7. START
