@@ -9,7 +9,7 @@ const gravity = 0.8;
 const friction = 0.9;
 const keys = {};
 
-// 2. PLAYER DEFINITION (Must be before initLevel)
+// 2. PLAYER DEFINITION
 const player = {
     x: 50,
     y: 300,
@@ -24,16 +24,12 @@ const player = {
 
 // 3. THE LEVEL DATABASE
 const LEVEL_DATABASE = [
-    // Level 1
     [
         {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},{"x":50,"y":330,"width":30,"height":30,"type":"SPAWN"},{"x":700,"y":300,"width":50,"height":80,"type":"GOAL"},{"x":391.5,"y":254.1875,"width":51,"height":131,"type":"PLATFORM"},{"x":271.5,"y":313.1875,"width":60,"height":25,"type":"PLATFORM"}
     ],
-    // Level 2
     [
-       {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},
-       {"x":2.5,"y":347.1875,"width":805,"height":59,"type":"SPIKE"},
-        {"x":0.5,"y":351.1875,"width":9,"height":43,"type":"SPIKE"},
-        {"x":-1.5,"y":347.1875,"width":28,"height":56,"type":"SPIKE"},
+        {"x":0,"y":380,"width":800,"height":20,"type":"PLATFORM"},
+        {"x":2.5,"y":347.1875,"width":805,"height":59,"type":"SPIKE"},
         {"x":38.5,"y":148.1875,"width":34,"height":27,"type":"SPAWN"},
         {"x":7.5,"y":181.1875,"width":106,"height":57,"type":"PLATFORM"},
         {"x":183.5,"y":189.1875,"width":42,"height":22,"type":"PLATFORM"},
@@ -65,6 +61,7 @@ function respawn() {
     player.y = spawnPoint.y;
     player.velX = 0;
     player.velY = 0;
+    player.jumping = false;
 }
 
 function nextLevel() {
@@ -82,9 +79,9 @@ function nextLevel() {
 window.addEventListener('keydown', (e) => keys[e.code] = true);
 window.addEventListener('keyup', (e) => keys[e.code] = false);
 
-// 6. GAME ENGINE
+// 6. GAME ENGINE (Updated with Solid Walls)
 function update() {
-    // --- 1. INPUTS ---
+    // Inputs
     if ((keys['ArrowUp'] || keys['Space'] || keys['KeyW']) && !player.jumping) {
         player.velY = -player.speed * 2.5;
         player.jumping = true;
@@ -96,13 +93,11 @@ function update() {
         if (player.velX < player.speed) player.velX++;
     }
 
-    // --- 2. PHYSICS ---
     player.velX *= friction;
     player.velY += gravity;
 
-    // --- 3. Y-AXIS MOVEMENT & COLLISION ---
+    // Y-AXIS MOVE & COLLISION
     player.y += player.velY;
-    
     worldObjects.forEach(obj => {
         if (player.x < obj.x + obj.width && player.x + player.width > obj.x &&
             player.y < obj.y + obj.height && player.y + player.height > obj.y) {
@@ -112,32 +107,23 @@ function update() {
                     player.jumping = false;
                     player.velY = 0;
                     player.y = obj.y - player.height;
-                } else if (player.velY < 0) { // Hitting head on bottom
-                    // If you want to go THROUGH the bottom, do nothing here.
-                    // If you want to hit your head, uncomment the next 2 lines:
-                    // player.velY = 0;
-                    // player.y = obj.y + obj.height;
                 }
             } else if (obj.type === 'SPIKE') respawn();
             else if (obj.type === 'GOAL') nextLevel();
         }
     });
 
-    // --- 4. X-AXIS MOVEMENT & COLLISION ---
+    // X-AXIS MOVE & COLLISION
     player.x += player.velX;
-
     worldObjects.forEach(obj => {
         if (player.x < obj.x + obj.width && player.x + player.width > obj.x &&
             player.y < obj.y + obj.height && player.y + player.height > obj.y) {
             
             if (obj.type === 'PLATFORM') {
-                // If moving right and hitting left wall
-                if (player.velX > 0) {
+                if (player.velX > 0) { // Hit left side of wall
                     player.x = obj.x - player.width;
                     player.velX = 0;
-                }
-                // If moving left and hitting right wall
-                else if (player.velX < 0) {
+                } else if (player.velX < 0) { // Hit right side of wall
                     player.x = obj.x + obj.width;
                     player.velX = 0;
                 }
@@ -146,7 +132,7 @@ function update() {
         }
     });
 
-    // --- 5. SCREEN BOUNDS ---
+    // Screen Bounds
     if (player.x < 0) player.x = 0;
     if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
 
@@ -154,6 +140,29 @@ function update() {
     requestAnimationFrame(update);
 }
 
-// 7. START
+// 7. DRAWING FUNCTION
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // UI Text
+    ctx.fillStyle = "white";
+    ctx.font = "16px sans-serif";
+    ctx.fillText(`Level: ${currentLevelIndex + 1}`, 20, 30);
+
+    // Objects
+    worldObjects.forEach(obj => {
+        if (obj.type === 'PLATFORM') ctx.fillStyle = '#2f3542';
+        else if (obj.type === 'SPIKE') ctx.fillStyle = '#ff4757';
+        else if (obj.type === 'GOAL') ctx.fillStyle = '#ffa502';
+        else if (obj.type === 'SPAWN') ctx.fillStyle = '#2ed573';
+        ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+    });
+
+    // Player
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+}
+
+// START GAME
 initLevel();
 update();
